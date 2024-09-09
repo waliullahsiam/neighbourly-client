@@ -1,4 +1,70 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { IoEyeOffOutline } from "react-icons/io5";
+import { MdOutlineRemoveRedEye } from "react-icons/md";
+import toast from "react-hot-toast";
+import { imageUpload } from "../../api/utils";
+import useAuth from "../../hooks/useAuth";
+import { CgSpinnerTwoAlt } from "react-icons/cg";
+
 const Register = () => {
+  const [error, setError] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const {
+    createUser,
+    signInWithGoogle,
+    updateUserProfile,
+    loading,
+    setLoading,
+  } = useAuth();
+
+  //react hook form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
+  const onSubmit = async (data) => {
+    const { email, name, password } = data;
+    const image = data.image[0];
+
+    try {
+      setLoading(true);
+
+      // Upload img & get the live url
+      const image_url = await imageUpload(image);
+
+      // user Registration
+      const result = await createUser(email, password);
+      console.log(result);
+
+      // save username and photo in firebase
+      await updateUserProfile(name, image_url);
+      navigate("/");
+      toast.success("Sign Up Successfull!");
+    } catch (err) {
+      console.log(err);
+      toast.success(err.message);
+    }
+  };
+
+  // hangle google signin
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+
+      navigate("/");
+      toast.success("Sign Up Successfull!");
+    } catch (err) {
+      console.log(err);
+      toast.success(err.message);
+    }
+  };
+
   return (
     <div>
       <>
@@ -8,7 +74,7 @@ const Register = () => {
               className="hidden lg:block lg:w-1/2 bg-cover"
               style={{
                 backgroundImage:
-                  'url("https://images.unsplash.com/photo-1546514714-df0ccc50d7bf?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=667&q=80")',
+                  'url("https://i.ibb.co.com/WnzxYz6/max-larochelle-Qz-P1-Gc-DOSC8-unsplash.jpg")',
               }}
             ></div>
             <div className="w-full p-8 lg:w-1/2">
@@ -18,9 +84,11 @@ const Register = () => {
               <p className="text-xl text-gray-600 text-center">
                 Welcome to Neighbourly!
               </p>
-              <a
-                href="#"
-                className="flex items-center justify-center mt-4 text-white rounded-lg shadow-md hover:bg-gray-100"
+
+              {/* Google Authentication */}
+              <button
+                onClick={handleGoogleSignIn}
+                className="flex items-center justify-center mt-4 text-white rounded-lg shadow-md hover:bg-gray-100 w-full cursor-pointer"
               >
                 <div className="px-4 py-3">
                   <svg className="h-6 w-6" viewBox="0 0 40 40">
@@ -42,10 +110,10 @@ const Register = () => {
                     />
                   </svg>
                 </div>
-                <h1 className="px-4 py-3 w-5/6 text-center text-gray-600 font-bold">
+                <h1 className="px-4 py-3 w-5/6 text-center text-gray-600 font-bold cursor-pointer">
                   Sign in with Google
                 </h1>
-              </a>
+              </button>
               <div className="mt-4 flex items-center justify-between">
                 <span className="border-b w-1/5 lg:w-1/4" />
                 <a
@@ -56,39 +124,158 @@ const Register = () => {
                 </a>
                 <span className="border-b w-1/5 lg:w-1/4" />
               </div>
-              <div className="mt-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Email Address
-                </label>
-                <input
-                  className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
-                  type="email"
-                />
-              </div>
-              <div className="mt-4">
-                <div className="flex justify-between">
+
+              <form onSubmit={handleSubmit(onSubmit)}>
+                {/* Email Authentication */}
+                <div className="mt-4">
                   <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Password
+                    User Name
                   </label>
-                  <a href="#" className="text-xs text-gray-500">
-                    Forget Password?
-                  </a>
+                  <input
+                    className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
+                    type="text"
+                    name="name"
+                    {...register("name", { required: true })}
+                  />
+                  {errors.name && (
+                    <span className="text-red-500 font-semibold text-md mt-1">
+                      *Name is required
+                    </span>
+                  )}
                 </div>
-                <input
-                  className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
-                  type="password"
-                />
-              </div>
-              <div className="mt-8">
-                <button className="bg-gradient-to-r from-indigo-900 to-zinc-900 hover:bg-gradient-to-r hover:from-zinc-700 hover:to-zinc-900 text-white font-bold py-2 px-4 w-full rounded hover:bg-gray-600">
-                  Login
-                </button>
-              </div>
+                <div className="mt-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
+                    type="email"
+                    name="email"
+                    {...register("email", { required: true })}
+                  />
+                  {errors.email && (
+                    <span className="text-red-500 font-semibold text-md mt-1">
+                      *Email is required
+                    </span>
+                  )}
+                </div>
+
+                {/* password */}
+                <div className="mt-4">
+                  <div className="flex justify-between items-center">
+                    <label className="block text-gray-700 text-sm font-bold mb-2">
+                      Password
+                    </label>
+                    <a href="#" className="text-xs text-gray-500">
+                      Forget Password?
+                    </a>
+                  </div>
+
+                  <div className="relative">
+                    <input
+                      className="bg-gray-200 text-gray-700 focus:outline-none focus:shadow-outline border border-gray-300 rounded py-2 px-4 block w-full appearance-none"
+                      type={showPass ? "text" : "password"}
+                      name="password"
+                      {...register("password", {
+                        required: true,
+                        minLength: 6,
+                        maxLength: 20,
+                        pattern:
+                          /(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z])/,
+                      })}
+                    />
+                    {/* Eye Icon */}
+                    <span
+                      className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-xl text-gray-600"
+                      onClick={() => setShowPass(!showPass)}
+                    >
+                      {showPass ? (
+                        <IoEyeOffOutline />
+                      ) : (
+                        <MdOutlineRemoveRedEye />
+                      )}
+                    </span>
+                  </div>
+                </div>
+                {errors.password?.type === "required" && (
+                  <span className="text-red-500 font-semibold text-md mt-2">
+                    Password is required
+                  </span>
+                )}
+                {errors.password?.type === "minLength" && (
+                  <span className="text-red-500 font-semibold text-md mt-2">
+                    Password Must be 6 characters
+                  </span>
+                )}
+                {errors.password?.type === "maxLength" && (
+                  <span className="text-red-500 font-semibold text-md mt-2">
+                    Password Must be less than 20 characters
+                  </span>
+                )}
+                {errors.password?.type === "pattern" && (
+                  <span className="text-red-500 font-semibold text-md mt-2">
+                    Password must have one Uppercase one lower case, one number
+                    and one special character.
+                  </span>
+                )}
+
+                {/* Img upload */}
+                <div className="flex items-center justify-center w-full mt-8">
+                  <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-200 hover:bg-gray-300 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                    <div className="flex flex-col items-center justify-center pt-2 pb-0">
+                      <svg
+                        className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 20 16"
+                      >
+                        <path
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                        />
+                      </svg>
+                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                        <span className="font-semibold">Click to upload</span>{" "}
+                        or drag and drop
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        SVG, PNG, JPG or GIF (MAX. 800x400px)
+                      </p>
+                    </div>
+
+                    <input
+                      type="file"
+                      name="image"
+                      className="file-input file-input-bordered file-input-xs w-full max-w-xs my-2"
+                      accept="image/*"
+                      {...register("image", { required: true })}
+                      required
+                    />
+                  </label>
+                </div>
+                <div className="mt-8">
+                  <button
+                    disabled={loading}
+                    type="submit"
+                    className="bg-gradient-to-r from-indigo-900 to-zinc-900 hover:bg-gradient-to-r hover:from-zinc-700 hover:to-zinc-900 text-white font-bold py-2 px-4 w-full rounded hover:bg-gray-600"
+                  >
+                    {loading ? (
+                      <CgSpinnerTwoAlt className="animate-spin m-auto" />
+                    ) : (
+                      "Register"
+                    )}
+                  </button>
+                </div>
+              </form>
               <div className="mt-4 flex items-center justify-between">
                 <span className="border-b w-1/5 md:w-1/4" />
-                <a href="#" className="text-xs text-gray-500 uppercase">
-                  or sign up
-                </a>
+                <Link to="/login" className="text-xs text-gray-500 uppercase">
+                  or sign in
+                </Link>
                 <span className="border-b w-1/5 md:w-1/4" />
               </div>
             </div>

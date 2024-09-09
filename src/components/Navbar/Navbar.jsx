@@ -1,20 +1,19 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import NavItems from "./NavItems";
+import useAuth from "../../hooks/useAuth";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, logOut } = useAuth();
+
   return (
     <nav className="relative bg-white shadow dark:bg-gray-800">
       <div className="max-w-screen-xl px-6 py-4 mx-auto">
         <div className="lg:flex lg:items-center lg:justify-between">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex justify-center items-center gap-3">
-              <img
-                className="w-auto h-8 md:h-8 "
-                src="./logo.png"
-                alt="logo"
-              />
+              <img className="w-auto h-8 md:h-8 " src="./logo.png" alt="logo" />
               <p className="text-gray-300 font-semibold text-base md:text-xl font-nunitoSans">
                 Neighbourly
               </p>
@@ -71,31 +70,51 @@ const Navbar = () => {
                 : "opacity-0 -translate-x-full"
             }`}
           >
-            <div className="flex flex-col -mx-6 lg:flex-row lg:items-center lg:mx-8">
+            <div className="flex flex-col items-center justify-center -mx-6 lg:flex-row lg:items-center lg:mx-8">
               <NavItems to="/">Home</NavItems>
               <NavItems to="/login">Login</NavItems>
               <NavItems to="/register">Register</NavItems>
               <NavItems to="/dashboard">Dashboard</NavItems>
             </div>
 
-            <div className="flex items-center mt-4 lg:mt-0">
-              <button
-                type="button"
-                className="flex items-center focus:outline-none"
-                aria-label="toggle profile dropdown"
-              >
-                <div className="w-8 h-8 overflow-hidden border-2 border-gray-400 rounded-full">
-                  <img
-                    src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80"
-                    className="object-cover w-full h-full"
-                    alt="avatar"
-                  />
-                </div>
+            <div className="flex justify-center items-center mt-4 lg:mt-0">
+              <div className="dropdown dropdown-end">
+                {user ? (
+                  <div
+                    tabIndex={0}
+                    role="button"
+                    className="btn btn-ghost btn-circle avatar"
+                  >
+                    <div className="w-10 rounded-full">
+                      <img
+                        alt="photo"
+                        src={user?.photoURL}
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div></div>
+                )}
 
-                <h3 className="mx-2 text-gray-700 dark:text-gray-200 lg:hidden">
-                  Khatab wedaa
-                </h3>
-              </button>
+                <ul
+                  tabIndex={0}
+                  className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow left-1/2 transform -translate-x-1/2 lg:left-auto lg:transform-none"
+                >
+                  <li>
+                    <Link to="/profile" className="justify-between">
+                      Profile
+                      <span className="badge">{user?.displayName}</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <a>Settings</a>
+                  </li>
+                  <li>
+                    <button onClick={logOut}>Logout</button>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
