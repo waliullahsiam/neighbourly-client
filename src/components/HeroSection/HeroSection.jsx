@@ -1,6 +1,7 @@
-import { RxLayers } from "react-icons/rx";
+import useAuth from "./../../hooks/useAuth";
 
 const HeroSection = () => {
+  const { user } = useAuth();
   return (
     <div>
       <section className="pt-8 lg:pt-16 bg-[url('https://pagedone.io/asset/uploads/1691055810.png')] bg-center bg-cover">
@@ -40,11 +41,13 @@ const HeroSection = () => {
             community.
           </p>
 
-          <div className="flex justify-center items-center w-full md:w-1/2 rounded-xl bg-gradient-to-tr from-pink-300 to-blue-300 p-0.5 shadow-lg mb-4 mx-auto hover:shadow-lg">
-            <button className="flex-1 font-bold text-xl bg-white px-2 py-2 rounded-xl ">
-            Create an account
-            </button>
-          </div>
+          {!user && (
+            <div className="flex justify-center items-center w-full md:w-1/4 rounded-xl bg-gradient-to-tr from-pink-300 to-blue-300 p-0.5 shadow-lg mb-10 mx-auto">
+              <button className="flex-1 font-bold text-base md:text-xl bg-white px-2 py-2 rounded-xl hover:shadow-lg hover:bg-indigo-200">
+                Create an account
+              </button>
+            </div>
+          )}
 
           {/* <div className="flex justify-center">
             <img
@@ -52,7 +55,6 @@ const HeroSection = () => {
               alt="Dashboard image"
             />
           </div> */}
-
         </div>
       </section>
     </div>
