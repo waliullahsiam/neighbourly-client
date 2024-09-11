@@ -3,7 +3,7 @@
 const Workers = () => {
     return (
         <div>
-            Workers
+            Workers page
         </div>
     );
 };
